@@ -41,6 +41,12 @@ body {
   box-shadow: 0 6px 14px rgba(40, 53, 68, 0.2);
 }
 
+.winning-square {
+  background: #ffe08a;
+  border-color: #d18b00;
+  color: #593900;
+}
+
 .square:focus {
   outline: 3px solid #2f7aa1;
   outline-offset: 2px;
@@ -80,6 +86,10 @@ body {
   min-width: 230px;
 }
 
+.sort-button {
+  margin-bottom: 12px;
+}
+
 .game-info ol {
   margin: 0;
   padding-left: 18px;
@@ -87,6 +97,11 @@ body {
 
 .game-info li {
   margin: 0 0 10px;
+}
+
+.current-move {
+  font-weight: 800;
+  color: #12364c;
 }
 
 .game-info button {

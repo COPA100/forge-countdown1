@@ -1,17 +1,22 @@
 import { useState } from 'react'
 import './App.css'
 
-function Square({ value, onSelect }) {
+function Square({ value, onSelect, isWinningSquare }) {
   return (
-    <button className="square" onClick={onSelect}>
+    <button
+      className={`square ${isWinningSquare ? 'winning-square' : ''}`.trim()}
+      onClick={onSelect}
+    >
       {value}
     </button>
   )
 }
 
 function Board({ cells, isXTurn, onPlay }) {
+  const winnerInfo = detectWinner(cells)
+
   function handleSelect(index) {
-    if (cells[index] || detectWinner(cells)) {
+    if (cells[index] || winnerInfo) {
       return
     }
 
@@ -20,29 +25,40 @@ function Board({ cells, isXTurn, onPlay }) {
     onPlay(updatedCells)
   }
 
-  const winner = detectWinner(cells)
+  const winner = winnerInfo?.winner
+  const isDraw = !winner && cells.every(cell => cell !== null)
   const status = winner
     ? `Winner: ${winner}`
-    : `Next player: ${isXTurn ? 'X' : 'O'}`
+    : isDraw
+      ? 'Result: Draw'
+      : `Next player: ${isXTurn ? 'X' : 'O'}`
+
+  const boardRows = []
+  for (let row = 0; row < 3; row += 1) {
+    const squares = []
+    for (let col = 0; col < 3; col += 1) {
+      const index = row * 3 + col
+      squares.push(
+        <Square
+          key={index}
+          value={cells[index]}
+          onSelect={() => handleSelect(index)}
+          isWinningSquare={winnerInfo?.line.includes(index) ?? false}
+        />,
+      )
+    }
+
+    boardRows.push(
+      <div key={row} className="board-row">
+        {squares}
+      </div>,
+    )
+  }
 
   return (
     <>
       <div className="status">{status}</div>
-      <div className="board-row">
-        <Square value={cells[0]} onSelect={() => handleSelect(0)} />
-        <Square value={cells[1]} onSelect={() => handleSelect(1)} />
-        <Square value={cells[2]} onSelect={() => handleSelect(2)} />
-      </div>
-      <div className="board-row">
-        <Square value={cells[3]} onSelect={() => handleSelect(3)} />
-        <Square value={cells[4]} onSelect={() => handleSelect(4)} />
-        <Square value={cells[5]} onSelect={() => handleSelect(5)} />
-      </div>
-      <div className="board-row">
-        <Square value={cells[6]} onSelect={() => handleSelect(6)} />
-        <Square value={cells[7]} onSelect={() => handleSelect(7)} />
-        <Square value={cells[8]} onSelect={() => handleSelect(8)} />
-      </div>
+      {boardRows}
     </>
   )
 }
@@ -50,6 +66,7 @@ function Board({ cells, isXTurn, onPlay }) {
 export default function Game() {
   const [history, setHistory] = useState([Array(9).fill(null)])
   const [moveIndex, setMoveIndex] = useState(0)
+  const [isAscending, setIsAscending] = useState(true)
 
   const isXTurn = moveIndex % 2 === 0
   const currentCells = history[moveIndex]
@@ -65,21 +82,37 @@ export default function Game() {
     setMoveIndex(move)
   }
 
-  const moveButtons = history.map((_, move) => {
-    const label = move === 0 ? 'Go to game start' : `Go to move #${move}`
-    const currentLabel =
-      move === 0 ? 'You are at game start' : `You are at move #${move}`
+  const moveButtons = history.map((cells, move) => {
+    let description
+
+    if (move === 0) {
+      description = 'Go to game start'
+    } else {
+      const previousCells = history[move - 1]
+      const changedIndex = cells.findIndex((cell, idx) => cell !== previousCells[idx])
+      const row = Math.floor(changedIndex / 3) + 1
+      const col = (changedIndex % 3) + 1
+      description = `Go to move #${move} (${col}, ${row})`
+    }
 
     if (move === moveIndex) {
-      return <li key={move}>{currentLabel}</li>
+      return (
+        <li key={move} className="current-move">
+          {description}
+        </li>
+      )
     }
 
     return (
       <li key={move}>
-        <button onClick={() => jumpTo(move)}>{label}</button>
+        <button onClick={() => jumpTo(move)}>{description}</button>
       </li>
     )
   })
+
+  if (!isAscending) {
+    moveButtons.reverse()
+  }
 
   return (
     <div className="game">
@@ -87,6 +120,13 @@ export default function Game() {
         <Board cells={currentCells} isXTurn={isXTurn} onPlay={handlePlay} />
       </div>
       <div className="game-info">
+        <button
+          type="button"
+          className="sort-button"
+          onClick={() => setIsAscending(prev => !prev)}
+        >
+          Sort: {isAscending ? 'Ascending' : 'Descending'}
+        </button>
         <ol>{moveButtons}</ol>
       </div>
     </div>
@@ -107,7 +147,10 @@ function detectWinner(cells) {
 
   for (const [a, b, c] of winPatterns) {
     if (cells[a] && cells[a] === cells[b] && cells[a] === cells[c]) {
-      return cells[a]
+      return {
+        winner: cells[a],
+        line: [a, b, c],
+      }
     }
   }
 
