@@ -67,6 +67,12 @@ export default function Game() {
 
   const moveButtons = history.map((_, move) => {
     const label = move === 0 ? 'Go to game start' : `Go to move #${move}`
+    const currentLabel =
+      move === 0 ? 'You are at game start' : `You are at move #${move}`
+
+    if (move === moveIndex) {
+      return <li key={move}>{currentLabel}</li>
+    }
 
     return (
       <li key={move}>
