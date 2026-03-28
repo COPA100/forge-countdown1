@@ -9,10 +9,7 @@ function Square({ value, onSelect }) {
   )
 }
 
-export default function Board() {
-  const [isXTurn, setIsXTurn] = useState(true)
-  const [cells, setCells] = useState(Array(9).fill(null))
-
+function Board({ cells, isXTurn, onPlay }) {
   function handleSelect(index) {
     if (cells[index] || detectWinner(cells)) {
       return
@@ -20,8 +17,7 @@ export default function Board() {
 
     const updatedCells = cells.slice()
     updatedCells[index] = isXTurn ? 'X' : 'O'
-    setCells(updatedCells)
-    setIsXTurn(!isXTurn)
+    onPlay(updatedCells)
   }
 
   const winner = detectWinner(cells)
@@ -48,6 +44,46 @@ export default function Board() {
         <Square value={cells[8]} onSelect={() => handleSelect(8)} />
       </div>
     </>
+  )
+}
+
+export default function Game() {
+  const [history, setHistory] = useState([Array(9).fill(null)])
+  const [moveIndex, setMoveIndex] = useState(0)
+
+  const isXTurn = moveIndex % 2 === 0
+  const currentCells = history[moveIndex]
+
+  function handlePlay(nextCells) {
+    const trimmedHistory = history.slice(0, moveIndex + 1)
+    const nextHistory = [...trimmedHistory, nextCells]
+    setHistory(nextHistory)
+    setMoveIndex(nextHistory.length - 1)
+  }
+
+  function jumpTo(move) {
+    setMoveIndex(move)
+  }
+
+  const moveButtons = history.map((_, move) => {
+    const label = move === 0 ? 'Go to game start' : `Go to move #${move}`
+
+    return (
+      <li key={move}>
+        <button onClick={() => jumpTo(move)}>{label}</button>
+      </li>
+    )
+  })
+
+  return (
+    <div className="game">
+      <div className="game-board">
+        <Board cells={currentCells} isXTurn={isXTurn} onPlay={handlePlay} />
+      </div>
+      <div className="game-info">
+        <ol>{moveButtons}</ol>
+      </div>
+    </div>
   )
 }
 
