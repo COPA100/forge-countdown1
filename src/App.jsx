@@ -1,27 +1,25 @@
 import './App.css'
 
+function Square({ value }) {
+  return <button className="square">{value}</button>
+}
+
 export default function Board() {
-  function renderNumberedSquare(n) {
-    return <button className="square">{n}</button>
-  }
+  const rows = [
+    ['1', '2', '3'],
+    ['4', '5', '6'],
+    ['7', '8', '9'],
+  ]
 
   return (
     <>
-      <div className="board-row">
-        {renderNumberedSquare(1)}
-        {renderNumberedSquare(2)}
-        {renderNumberedSquare(3)}
-      </div>
-      <div className="board-row">
-        {renderNumberedSquare(4)}
-        {renderNumberedSquare(5)}
-        {renderNumberedSquare(6)}
-      </div>
-      <div className="board-row">
-        {renderNumberedSquare(7)}
-        {renderNumberedSquare(8)}
-        {renderNumberedSquare(9)}
-      </div>
+      {rows.map((row, rowIndex) => (
+        <div className="board-row" key={rowIndex}>
+          {row.map((value) => (
+            <Square key={value} value={value} />
+          ))}
+        </div>
+      ))}
     </>
   )
 }
