@@ -1,22 +1,29 @@
+import { useState } from 'react'
 import './App.css'
 
-function Square({ value }) {
-  return <button className="square">{value}</button>
+function Square() {
+  const [mark, setMark] = useState(null)
+
+  function handleSelect() {
+    setMark('X')
+  }
+
+  return (
+    <button className="square" onClick={handleSelect}>
+      {mark}
+    </button>
+  )
 }
 
 export default function Board() {
-  const rows = [
-    ['1', '2', '3'],
-    ['4', '5', '6'],
-    ['7', '8', '9'],
-  ]
+  const rows = [0, 1, 2]
 
   return (
     <>
-      {rows.map((row, rowIndex) => (
-        <div className="board-row" key={rowIndex}>
-          {row.map((value) => (
-            <Square key={value} value={value} />
+      {rows.map((row) => (
+        <div className="board-row" key={row}>
+          {rows.map((col) => (
+            <Square key={`${row}-${col}`} />
           ))}
         </div>
       ))}
